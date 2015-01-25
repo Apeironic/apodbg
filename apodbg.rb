@@ -11,6 +11,11 @@ require 'net/http'  #Used to fetch Image
 require 'fileutils' #Used to Make User Image Directory Recursively
 require 'yaml'      #Used for config file
 
+#Defaults
+$config = {"img_dir" => "/home/yang/public/pictures/apod/", 
+	  "bg_command" => "feh --bg-max",
+	  "image_exts" => [ ".gif", ".png", ".jpg", ".jpeg"]};
+
 $configfile = '/home/yang/.config/apod/apod.yaml' #This global variable contians the location of the config file
 base = 'http://apod.nasa.gov/apod/' #This Global Variable is the Base URL for Nasa's APOD Program
 
@@ -20,23 +25,19 @@ def makeConfigFile(values_hash, path)
 	end
 end
 
-
-#Defaults
-# This is a list of default settigs in case the config file can't be found
-img_dir = '/home/yang/public/pictures/apod/'
-bg_command = 'feh --bg-max'
-$image_exts = [ '.gif' , '.png' , '.jpg' , '.jpeg' ]
-
-makeConfigFile({"system" => { "img_dir" => img_dir, "bg_command" => bg_command, "image_exts" => $image_exts}}, $configfile);
 fetch_date = Time.now.strftime("%y%m%d")
 
 #Read Config File
 if(File.exists?($configfile))
-	config = YAML.load_file($configfile)
-	bg_command = config["system"]["bg_command"] || bg_command
-	img_dir = config["system"]["img_dir"] || img_dir
-	$image_exts = config["system"]["image_exts"] || $image_exts
+	cf = YAML.load_file($configfile)
+	$config["bg_command"] = cf["bg_command"] || $config["bg_command"]
+	$config["img_dir"] = cf["img_dir"] || $config["img_dir"]
+	$config["image_exts"] = cf["image_exts"] || $config["image_exts"]
+else
+	#make Config File
+	makeConfigFile($config, $configfile)	
 end
+
 
 #Find out what day to fetch
 if (ARGV.length >= 1)
@@ -48,17 +49,17 @@ end
 uri = "#{base}ap#{fetch_date}.html"
 
 #Be sure the Image Directory Exists
-if(! Dir.exists?(img_dir))
-	puts "Creating Directory #{img_dir}"
-	FileUtils.mkdir_p img_dir
+if(! Dir.exists?($config["img_dir"]))
+	puts "Creating Directory #{$config["img_dir"]}"
+	FileUtils.mkdir_p $config["img_dir"]
 end
 
 
 #Do we Even need to do anything?? Does image already exist?
-Dir.chdir(img_dir)
+Dir.chdir($config["img_dir"])
 if(!Dir.glob("#{fetch_date}.*").empty?)
 	    puts "Found Image for #{fetch_date}... exiting"
-	    `#{bg_command} #{Dir.glob("#{fetch_date}.*")[0]}`
+	    `#{$config["bg_command"]} #{Dir.glob("#{fetch_date}.*")[0]}`
 	    exit(1);
 end
 
@@ -68,18 +69,18 @@ link_uri = page.css('img')[0].parent.get_attribute('href')
 
 def getImageExt(str)
 	#Try a three character extension
-	i = $image_exts.index(str.downcase[-4..-1])
+	i = $config["image_exts"].index(str.downcase[-4..-1])
 	#Do we need to try a 4 character extension?
 	if(i == nil)
-		i = $image_exts.index(str.downcase[-5..-1])
+		i = $config["image_exts"].index(str.downcase[-5..-1])
 	end
-	return $image_exts[i] unless i == nil
+	return $config["image_exts"][i] unless i == nil
 	return nil
 end
 
 
 if (getImageExt(link_uri))
-	f = open(img_dir << fetch_date << getImageExt(link_uri), "wb")
+	f = open($config["img_dir"] << fetch_date << getImageExt(link_uri), "wb")
 	link_uri.strip!
 	link_uri.insert(0, base) unless link_uri.index('http://') == 0
 	puts "Getting Image from link #{link_uri}..."
@@ -88,7 +89,7 @@ if (getImageExt(link_uri))
 	puts "Writing Image #{f.path}..."
 	f.write(img);
 else
-	f = open(img_dir << fetch_date << getImageExt(img_uri), "wb")
+	f = open($config["img_dir"] << fetch_date << getImageExt(img_uri), "wb")
 	img_uri.strip!
 	img_uri.insert(0, base) unless img_uri.index('http://') == 0	
 	puts "Getting Image #{img_uri}..."
@@ -97,5 +98,5 @@ else
 	puts "Writing Image #{f.path}..."
 	f.write(img);
 end
-`#{bg_command} #{f.path}`
+`#{$config["bg_command"]} #{f.path}`
 f.close();
