@@ -16,17 +16,19 @@ base = 'http://apod.nasa.gov/apod/' #This Global Variable is the Base URL for Na
 
 #Defaults
 # This is a list of default settigs in case the config file can't be found
-default_img_dir = '/home/yang/public/pictures/apod/'
-default_bg_command = 'feh --bg-max'
-default_image_exts = [ '.gif' , '.png' , '.jpg' , '.jpeg' ]
+img_dir = '/home/yang/public/pictures/apod/'
+bg_command = 'feh --bg-max'
+image_exts = [ '.gif' , '.png' , '.jpg' , '.jpeg' ]
+
 fetch_date = Time.now.strftime("%y%m%d")
 
 #Read Config File
-config = YAML.load_file($configfile)
-bg_command = config["system"]["bg_command"] || default_bg_command
-img_dir = config["system"]["img_dir"] || default_img_dir
-$image_exts = config["system"]["image_exts"] || default_image_exts
-
+if(File.exists?($configfile))
+	config = YAML.load_file($configfile)
+	bg_command = config["system"]["bg_command"] || bg_command
+	img_dir = config["system"]["img_dir"] || img_dir
+	$image_exts = config["system"]["image_exts"] || $image_exts
+end
 
 #Find out what day to fetch
 if (ARGV.length >= 1)
