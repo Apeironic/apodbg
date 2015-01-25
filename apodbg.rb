@@ -14,12 +14,20 @@ require 'yaml'      #Used for config file
 $configfile = '/home/yang/.config/apod/apod.yaml' #This global variable contians the location of the config file
 base = 'http://apod.nasa.gov/apod/' #This Global Variable is the Base URL for Nasa's APOD Program
 
+def makeConfigFile(values_hash, path)
+	open(path, "wb") do |cf|
+		cf.write(values_hash.to_yaml);
+	end
+end
+
+
 #Defaults
 # This is a list of default settigs in case the config file can't be found
 img_dir = '/home/yang/public/pictures/apod/'
 bg_command = 'feh --bg-max'
-image_exts = [ '.gif' , '.png' , '.jpg' , '.jpeg' ]
+$image_exts = [ '.gif' , '.png' , '.jpg' , '.jpeg' ]
 
+makeConfigFile({"system" => { "img_dir" => img_dir, "bg_command" => bg_command, "image_exts" => $image_exts}}, $configfile);
 fetch_date = Time.now.strftime("%y%m%d")
 
 #Read Config File
