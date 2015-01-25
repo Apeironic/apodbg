@@ -23,9 +23,9 @@ fetch_date = Time.now.strftime("%y%m%d")
 
 #Read Config File
 config = YAML.load_file($configfile)
-bg_command = config["system"]["bg_command"]
-img_dir = config["system"]["img_dir"]
-$image_exts = config["system"]["image_exts"]
+bg_command = config["system"]["bg_command"] || default_bg_command
+img_dir = config["system"]["img_dir"] || default_img_dir
+$image_exts = config["system"]["image_exts"] || default_image_exts
 
 
 #Find out what day to fetch
@@ -35,7 +35,7 @@ if (ARGV.length >= 1)
 else
 	puts "Running with no arguments. Fetching Todays Image"
 end
-uri = "#{base}/ap#{fetch_date}.html"
+uri = "#{base}ap#{fetch_date}.html"
 
 #Be sure the Image Directory Exists
 if(! Dir.exists?(img_dir))
