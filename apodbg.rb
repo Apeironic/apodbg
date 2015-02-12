@@ -4,6 +4,8 @@
 # Public Domain - All code that I have written in this file is public domain
 # apodbg - This Program is designed to  Fetch NASA's Picture of the Day and set it as the users background. The program matains an archieve of image files in a user chosen directory
 
+
+#Ruby Gems Requirements Various Libraries to make my life easier. Thank You!!
 require 'rubygems'
 require 'nokogiri'  #Used to parse page to find Image URL
 require 'open-uri'  #Used to Open URL to fetch data
@@ -11,18 +13,23 @@ require 'net/http'  #Used to fetch Image
 require 'fileutils' #Used to Make User Image Directory Recursively
 require 'yaml'      #Used for config file
 
-#Defaults
-$config = {"img_dir" => "/home/yang/public/pictures/apod/", 
+#Global Config Variable - this variable stores our configuration, it comes preloaded with defaults!
+$config = {"img_dir" => "#{ENV["HOME"]}/public/pictures/apod/", 
 	  "bg_command" => "feh --bg-max",
-	  "image_exts" => [ ".gif", ".png", ".jpg", ".jpeg"]};
+	  "image_exts" => [ ".gif", ".png", ".jpg", ".jpeg", ".bmp"]};
 
-$configfile = '/home/yang/.config/apod/apod.yaml' #This global variable contians the location of the config file
+$configfile = "#{ENV["HOME"]}/.config/apod/apod.yaml" #This global variable contians the location of the config file
 base = 'http://apod.nasa.gov/apod/' #This Global Variable is the Base URL for Nasa's APOD Program
 
 def makeConfigFile(values_hash, path)
-	open(path, "wb") do |cf|
+	#Does Directory Exist?
+	open(path, "w") do |cf|
 		cf.write(values_hash.to_yaml);
 	end
+end
+
+def setBg(image_path)
+	`#{$config["bg_command"]}#{image_path}`
 end
 
 fetch_date = Time.now.strftime("%y%m%d")
@@ -59,7 +66,7 @@ end
 Dir.chdir($config["img_dir"])
 if(!Dir.glob("#{fetch_date}.*").empty?)
 	    puts "Found Image for #{fetch_date}... exiting"
-	    `#{$config["bg_command"]} #{Dir.glob("#{fetch_date}.*")[0]}`
+	    setBg($config["img_dir"] + Dir.glob("#{fetch_date}.*")[0])
 	    exit(1);
 end
 
@@ -98,5 +105,5 @@ else
 	puts "Writing Image #{f.path}..."
 	f.write(img);
 end
-`#{$config["bg_command"]} #{f.path}`
+setBg(f.path);
 f.close();
