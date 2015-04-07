@@ -1,0 +1,20 @@
+Arguments:
+-Use a ruby gem to parse arguments the GNU way
+-Setup argument for date to use a more reasonable format
+-set an argument for config file location
+-set a FORCE mode than overwrites an old image if it exists
+-setup a no create config file option
+-option for all config file parameters
+-set a update config file option
+
+ERROR Handling:
+-Ensure file IO is tried
+-Ensure NETwork IO is tried
+-Ensure If statements are handled prorperly
+-What happends if no images on page?
+
+Package:
+Create Arch Package
+
+BUGS:
+Config File auto create fails when directory doesn't exist
